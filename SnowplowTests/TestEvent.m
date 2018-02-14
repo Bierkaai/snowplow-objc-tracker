@@ -455,6 +455,56 @@
     }
 }
 
+- (void)testPushNotificationBuilderConditions {
+    // Valid construction
+    SPPushNotification *event = [SPPushNotification build:^(id<SPPushNotificationBuilder> builder) {
+        [builder setCategory:@"category"];
+        [builder setMessage:@"message"];
+        [builder setSound:@"sound"];
+        [builder setType:@"type"];
+    }];
+    XCTAssertNotNil(event);
+    
+    // Category is empty
+    @try {
+        event = [SPPushNotification build:^(id<SPPushNotificationBuilder> builder) {
+            [builder setCategory:@""];
+            [builder setMessage:@"message"];
+            [builder setSound:@"sound"];
+            [builder setType:@"type"];
+        }];
+    }
+    @catch (NSException *exception) {
+        XCTAssertEqualObjects(@"Category cannot be nil or empty.", exception.reason);
+    }
+    
+    // Message is nil
+    @try {
+        event = [SPPushNotification build:^(id<SPPushNotificationBuilder> builder) {
+            [builder setCategory:@"category"];
+            [builder setMessage:@""];
+            [builder setSound:@"sound"];
+            [builder setType:@"type"];
+        }];
+    }
+    @catch (NSException *exception) {
+        XCTAssertEqualObjects(@"Message cannot be nil or empty.", exception.reason);
+    }
+    
+    // Type is empty
+    @try {
+        event = [SPPushNotification build:^(id<SPPushNotificationBuilder> builder) {
+            [builder setCategory:@"category"];
+            [builder setMessage:@"message"];
+            [builder setSound:@"sound"];
+            [builder setType:@""];
+        }];
+    }
+    @catch (NSException *exception) {
+        XCTAssertEqualObjects(@"Type cannot be nil or empty.", exception.reason);
+    }
+}
+
 // --- Helpers
 
 - (NSMutableArray *) getCustomContext {

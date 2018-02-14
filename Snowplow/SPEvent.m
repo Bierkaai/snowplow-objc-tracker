@@ -540,3 +540,64 @@
 }
 
 @end
+
+// Push Notification Event
+
+@implementation SPPushNotification {
+    NSString * _category;
+    NSString * _message;
+    NSString * _sound;
+    NSString * _type;
+}
+
++ (instancetype) build:(void(^)(id<SPPushNotificationBuilder>builder))buildBlock {
+    SPPushNotification* event = [SPPushNotification new];
+    if (buildBlock) { buildBlock(event); }
+    [event preconditions];
+    return event;
+}
+
+- (id) init {
+    self = [super init];
+    return self;
+}
+
+- (void) preconditions {
+    [SPUtilities checkArgument:([_category length] != 0) withMessage:@"Category cannot be nil or empty."];
+    [SPUtilities checkArgument:([_message length] != 0) withMessage:@"Message cannot be nil or empty."];
+    [SPUtilities checkArgument:([_type length] != 0) withMessage:@"Type cannot be nil or empty."];
+    [self basePreconditions];
+}
+
+// --- Builder Methods
+
+- (void) setCategory:(NSString *)category {
+    _category = category;
+}
+
+- (void) setMessage:(NSString *)message {
+    _message = message;
+}
+
+- (void) setType:(NSString *)type {
+    _type = type;
+}
+
+- (void) setSound:(NSString *)sound {
+    _sound = sound;
+}
+
+// --- Public Methods
+
+- (SPPayload *) getPayload {
+    SPPayload *pb = [[SPPayload alloc] init];
+    [pb addValueToPayload:kSPEventUnstructured forKey:kSPEvent];
+    [pb addValueToPayload:kSPPushNotificationSchema forKey:kSPSchema];
+    [pb addValueToPayload:_category forKey:kSPPushCategory];
+    [pb addValueToPayload:_sound forKey:kSPPushSound];
+    [pb addValueToPayload:_type forKey:kSPPushType];
+    [pb addValueToPayload:_message forKey:kSPPushMessage];
+    return [self addDefaultParamsToPayload:pb];
+}
+
+@end

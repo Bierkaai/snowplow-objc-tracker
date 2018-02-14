@@ -251,6 +251,10 @@
     [self addEventWithPayload:[event getPayload] andContext:[event getContexts] andEventId:[event getEventId]];
 }
 
+- (void) trackPushNotificationEvent:(SPPushNotification *)event {
+    [self addEventWithPayload:[event getPayload] andContext:[event getContexts] andEventId:[event getEventId]];
+}
+
 // Event Decoration
 
 - (void) addEventWithPayload:(SPPayload *)pb andContext:(NSMutableArray *)contextArray andEventId:(NSString *)eventId {

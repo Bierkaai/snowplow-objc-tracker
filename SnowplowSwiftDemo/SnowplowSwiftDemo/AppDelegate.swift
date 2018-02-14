@@ -9,15 +9,73 @@
 import UIKit
 import CoreData
 import Foundation
+import UserNotifications
+import SnowplowTracker
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
-
-
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                         didReceive response: UNNotificationResponse,
+                                         withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        let actionIdentifier = response.actionIdentifier
+        
+        switch actionIdentifier {
+        case UNNotificationDismissActionIdentifier: // Notification was dismissed by user
+            // Do something
+            completionHandler()
+        case UNNotificationDefaultActionIdentifier: // App was opened from notification
+            NSLog("Remote notification opened app from background!")
+            if let rootViewController = window?.rootViewController as? ViewController {
+                
+                NSLog("Notification action identifier: %@", actionIdentifier)
+                
+                let aps = response.notification.request.content.userInfo
+                let category = aps["category"] as? String ?? "unknown"
+                let sound = aps["sound"] as? String ?? "unknown"
+                let message = aps["message"] as? String ?? "unknown"
+                
+                let event = SPPushNotification.build({ (builder : SPPushNotificationBuilder?) -> Void in
+                    builder!.setCategory(category)
+                    builder!.setSound(sound)
+                    builder!.setMessage(message)
+                    builder!.setType("open")
+                })
+                rootViewController.tracker.trackPushNotificationEvent(event)
+            }
+            completionHandler()
+        default:
+            completionHandler()
+        }
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        // iOS 10 support
+        if #available(iOS 10, *) {
+            UNUserNotificationCenter.current().requestAuthorization(options:[.badge, .alert, .sound]){ (granted, error) in }
+            application.registerForRemoteNotifications()
+        }
+            // iOS 9 support
+        else if #available(iOS 9, *) {
+            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.badge, .sound, .alert], categories: nil))
+            UIApplication.shared.registerForRemoteNotifications()
+        }
+            // iOS 8 support
+        else if #available(iOS 8, *) {
+            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.badge, .sound, .alert], categories: nil))
+            UIApplication.shared.registerForRemoteNotifications()
+        }
+            // iOS 7 support
+        else {
+            application.registerForRemoteNotifications(matching: [.badge, .sound, .alert])
+        }
+        
+        UNUserNotificationCenter.current().delegate = self
+        
         return true
     }
 
@@ -43,6 +101,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
         self.saveContext()
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        if let rootViewController = window?.rootViewController as? ViewController {
+            let token = String(format: "%@", deviceToken as CVarArg).trimmingCharacters(in: CharacterSet(charactersIn: "<>")).replacingOccurrences(of: " ", with: "")
+            NSLog("%@", token)
+            rootViewController.updateToken(token)
+        }
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NSLog("%@", error.localizedDescription )
     }
 
     // MARK: - Core Data stack

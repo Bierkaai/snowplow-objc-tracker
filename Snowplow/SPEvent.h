@@ -86,6 +86,13 @@
 - (void) setCurrency:(NSString *)currency;
 @end
 
+@protocol SPPushNotificationBuilder <SPEventBuilder>
+- (void) setMessage:(NSString *)message;
+- (void) setCategory:(NSString *)category;
+- (void) setSound:(NSString *)sound;
+- (void) setType:(NSString *)type;
+@end
+
 // Base Event
 
 @interface SPEvent : NSObject <SPEventBuilder>
@@ -148,5 +155,12 @@
 
 @interface SPEcommerceItem : SPEvent <SPEcommTransactionItemBuilder>
 + (instancetype) build:(void(^)(id<SPEcommTransactionItemBuilder>builder))buildBlock;
+- (SPPayload *) getPayload;
+@end
+
+// Push Notification Event
+
+@interface SPPushNotification : SPEvent <SPPushNotificationBuilder>
++ (instancetype) build:(void(^)(id<SPPushNotificationBuilder>builder))buildBlock;
 - (SPPayload *) getPayload;
 @end

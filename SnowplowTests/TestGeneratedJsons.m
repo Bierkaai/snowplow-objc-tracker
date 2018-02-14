@@ -211,6 +211,19 @@ const NSString* IGLU_PATH = @"http://raw.githubusercontent.com/snowplow/iglu-cen
     XCTAssertTrue([validator validateJson:sdj]);
 }
 
+- (void)testPushNotificationEventJson {
+    SPPushNotification *event = [SPPushNotification build:^(id<SPPushNotificationBuilder> builder) {
+        [builder setCategory:@"category"];
+        [builder setMessage:@"message"];
+        [builder setSound:@"sound"];
+        [builder setType:@"open"];
+    }];
+    NSDictionary * sdj = [[event getPayload] getAsDictionary];
+    
+    // Test that the SelfDescribingJson passes validation
+    XCTAssertTrue([validator validateJson:sdj]);
+}
+
 - (void)testFinalEventPayloadJson {
     SPTracker * tracker = [self getTracker:@"acme.fake.url"];
     SPPageView *event = [SPPageView build:^(id<SPPageViewBuilder> builder) {

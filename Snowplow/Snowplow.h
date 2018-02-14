@@ -73,6 +73,7 @@ extern NSString * const kSPMobileContextSchema;
 extern NSString * const kSPDesktopContextSchema;
 extern NSString * const kSPSessionContextSchema;
 extern NSString * const kSPGeoContextSchema;
+extern NSString * const kSPPushNotificationSchema;
 
 // --- Event Keys
 
@@ -195,5 +196,12 @@ extern NSString * const kSPUtCategory;
 extern NSString * const kSPUtVariable;
 extern NSString * const kSPUtTiming;
 extern NSString * const kSPUtLabel;
+
+// --- Push Notification Event
+
+extern NSString * const kSPPushCategory;
+extern NSString * const kSPPushMessage;
+extern NSString * const kSPPushSound;
+extern NSString * const kSPPushType;
 
 @end
